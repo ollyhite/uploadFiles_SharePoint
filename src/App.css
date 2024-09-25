@@ -1,0 +1,193 @@
+/*@import '~antd/dist/antd.css';*/
+
+.ant-table-thead > tr > th {
+  color: rgba(0, 0, 0, 0.65);
+  font-weight: 600;
+  text-align: left;
+}
+
+.hideable {
+  -webkit-transition: 0.5s;
+  -moz-transition: 0.5s;
+  -o-transition: 0.5s;
+  transition: 0.5s;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.hiddenClass {
+  display: none;
+}
+
+.showClass {
+  display: block;
+}
+
+.hideable.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.ant-popover-inner .input-popover {
+  background-color: #ccc;
+}
+
+.ant-popover-inner-content .input-popover {
+  color: #000;
+}
+
+.ant-popover-placement-top
+  > .ant-popover-content
+  > .ant-popover-arrow
+  .input-popover,
+.ant-popover-placement-topLeft
+  > .ant-popover-content
+  > .ant-popover-arrow
+  .input-popover,
+.ant-popover-placement-topRight
+  > .ant-popover-content
+  > .ant-popover-arrow
+  .input-popover {
+  border-color: #ccc;
+}
+
+.link-button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  display: inline;
+  margin: 0;
+  padding: 0;
+}
+
+.link-button:hover,
+.link-button:focus {
+  text-decoration: none;
+}
+
+.phs-btn-primary {
+  color: #eee;
+  background-color: #a71930;
+  border-color: #a71930;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.12);
+  -webkit-box-shadow: 0 2px 0 rgba(0, 0, 0, 0.045);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.045);
+}
+
+.phs-btn-primary:focus,
+.phs-btn-primary:hover {
+  color: #fff;
+  background-color: rgba(167, 25, 48, 0.9);
+  border-color: rgba(167, 25, 48, 0.9);
+}
+
+.phs-btn-primary:focus,
+.phs-btn-primary:hover {
+  color: #fff;
+  background-color: rgba(167, 25, 48, 0.9);
+  border-color: rgba(167, 25, 48, 0.9);
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.12);
+  -webkit-box-shadow: 0 2px 0 rgba(0, 0, 0, 0.045);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.045);
+}
+
+.ant-table-tbody > tr > td {
+  vertical-align: top;
+}
+
+.drawer-tab {
+  top: 180px;
+  right: -34px;
+  width: 106px;
+  height: 40px;
+  text-align: center;
+  position: fixed;
+  transform: rotate(-90deg);
+  --ms-transform: rotate(-90deg);
+  -moz-transform: rotate(-90deg);
+  --webkit-transfor: rotate(-90deg);
+  border-top-right-radius: 4px;
+}
+
+.ant-comment-inner {
+  padding: 16px 0 8px;
+}
+
+.ant-comment-actions {
+  margin-top: 2px;
+}
+
+.ant-typography-copy,
+.ant-typography-edit,
+.ant-typography-expand {
+  font-size: 12px;
+}
+
+.ant-checkbox-group-item {
+  display: block;
+  margin-top: 5px;
+}
+
+.ant-input[disabled],
+.ant-select-disabled.ant-select-single:not(.ant-select-customize-input)
+  .ant-select-selector,
+.ant-select-disabled.ant-select-multiple .ant-select-selector {
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.ant-divider-horizontal {
+  margin: 0 0 24px;
+}
+
+.ant-modal-mask {
+  background-color: rgba(0, 0, 0, -0.55);
+}
+.term_export_btn {
+  margin-left: auto;
+  margin-top: 8px;
+}
+.summaryTabDisabled,
+.addressTabDisabled,
+.taxonomyTabDisabled,
+.networkTabDisabled,
+.facilityTypeTabDisabled,
+.w9TabDisabled,
+.reportableSpecialityTabDisabled,
+.directoryServicesTabDisabled,
+.specializedServicesTabDisabled,
+.specialAgreementTabDisabled,
+.languagesTabDisabled,
+.practitionersTabDisabled,
+.groupsTabDisabled,
+.ipaTabDisabled,
+.facilitiesTabDisabled,
+.bhTabDisabled {
+  color: currentColor;
+  cursor: not-allowed;
+  pointer-events: none;
+  opacity: 0.5;
+  text-decoration: none;
+}
+.mrgn_bottm_0 {
+  margin-bottom: 0px;
+}
+
+.ant-table-tbody > tr > td,
+.ant-table-thead > tr > th,
+.ant-table tfoot > tr > td,
+.ant-table tfoot > tr > th {
+  padding: 10px !important;
+}
+.pad_btm {
+  padding-bottom: 15px;
+}
+.ant-picker-cell-disabled {
+  color: red;
+}
+.ant-picker-cell-disabled .ant-picker-cell-inner {
+  text-decoration: line-through;
+}
+#TermIndicators.ant-checkbox-group {
+  display: inline-flex;
+}
