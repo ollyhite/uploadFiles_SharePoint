@@ -7,8 +7,8 @@ const fs = require("fs");
 const { sp } = require("@pnp/sp-commonjs");
 const { NodeFetchClient } = require("pnp-auth");
 const { SPFetchClient } = require("@pnp/nodejs-commonjs");
-const msal = require("@azure/msal-node");
-
+// const msal = require("@azure/msal-node");
+require("dotenv").config();
 const { BearerTokenFetchClient } = require("@pnp/nodejs-commonjs");
 const router = express.Router();
 const upload = multer({ dest: "uploads/" }); // Adjust the destination as needed
@@ -29,51 +29,46 @@ const config = {
 };
 // const cca = new msal.ConfidentialClientApplication(config);
 // Function to get the access token
-// async function getAccessToken() {
-//   const tokenEndpoint = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
-
-//   const requestBody = new URLSearchParams({
-//     grant_type: "client_credentials",
-//     client_id: clientId,
-//     client_secret: clientSecret,
-//     scope: `${resource}/.default`,
-//   });
-
-//   try {
-//     const response = await axios.post(tokenEndpoint, requestBody, {
-//       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-//     });
-
-//     return response.data.access_token;
-//   } catch (error) {
-//     console.error("Error obtaining token:", error.response.data);
-//     throw new Error("Failed to obtain access token");
-//   }
-// }
-// Acquire the token
 async function getAccessToken() {
+  const tokenEndpoint = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
+
+  const requestBody = new URLSearchParams({
+    grant_type: "client_credentials",
+    client_id: clientId,
+    client_secret: clientSecret,
+    scope: `${resource}/.default`,
+  });
+
   try {
-    const tokenResponse = await cca.acquireTokenByClientCredential({
-      scopes: [`${resource}/.default`],
+    const response = await axios.post(tokenEndpoint, requestBody, {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
     });
 
-    return tokenResponse.accessToken;
+    return response.data.access_token;
   } catch (error) {
-    console.error("Error obtaining access token:", error);
+    console.error("Error obtaining token:", error.response.data);
     throw new Error("Failed to obtain access token");
   }
 }
 
-async function setupPnP() {
-  const accessToken = await getAccessToken();
-  console.log("accessToken in setupPnP", accessToken);
+// Acquire the token
+// async function getAccessToken() {
+//   try {
+//     const tokenResponse = await cca.acquireTokenByClientCredential({
+//       scopes: [`${resource}/.default`],
+//     });
+
+//     return tokenResponse.accessToken;
+//   } catch (error) {
+//     console.error("Error obtaining access token:", error);
+//     throw new Error("Failed to obtain access token");
+//   }
+// }
+
+async function configureSP(accessToken) {
   sp.setup({
     sp: {
-      fetchClientFactory: () =>
-        new SPFetchClient(
-          "https://ollyhite.sharepoint.com/sites/Team_demo",
-          accessToken
-        ),
+      fetchClientFactory: () => new SPFetchClient(siteUrl, accessToken),
     },
   });
 }
@@ -88,65 +83,72 @@ async function configureSP() {
   });
 }
 
-// Call the SharePoint configuration on router initialization
+async function uploadFileToSharePoint(filePath, fileName, folderPath) {
+  const accessToken = await getAccessToken(); // Get the access token
+  console.log("Access Token:", accessToken);
+  console.log("fileName", fileName);
+  console.log("siteUrl", process.env.SITE_URL);
 
-router.post("/NoteFilesUpload", upload.array("files"), async (req, res) => {
+  const file = fs.readFileSync(filePath); // Read the file from disk
+
   try {
-    // Step 1: Get the access token
-    //const accessToken = await getAccessToken();
-
-    //await configureSP(); // Ensure PnP JS is configured before making any requests
-    await setupPnP();
-    console.log("files", req.files); // Log the files to check their presence
-
-    const uploadPromises = req.files.map(async (file) => {
-      const fileName = file.originalname;
-
-      // Define the folder path where you want to upload the file
-      const folderPath = "/sites/Team_demo/Documents/Dynamic_Folder_test"; // Use your dynamic folder name
-
-      // Ensure the folder exists
-
-      await sp.web.folders.add(folderPath); // This will create the folder if it doesn't exist
-      // await sp.web.getFolderByServerRelativeUrl("/test").files.add(fileName);
-      // Upload the file to SharePoint
-      const uploadResponse = await sp.web
-        .getFolderByServerRelativeUrl(folderPath)
-        .files.add(fileName, file.buffer, true); // Use file.buffer directly
-
-      // Get the uploaded file’s URL
-
-      return uploadResponse.file;
-    });
-
-    // Wait for all uploads to complete
-    const uploadedFiles = await Promise.all(uploadPromises);
-
-    // Optionally, generate shareable links for each uploaded file
-    const shareableLinks = await Promise.all(
-      uploadedFiles.map(async (uploadedFile) => {
-        return await uploadedFile.getShareLink({
-          emailData: null, // Optionally specify emailData to send emails about the share link
-          linkKind: 2, // 2 = Anonymous view link
-        });
-      })
+    const response = await axios.put(
+      `${siteUrl}/_api/web/GetFolderByServerRelativeUrl(${folderPath})/Files/add(url=${fileName},overwrite=true)`,
+      file,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          Accept: "application/json;odata=verbose",
+          "Content-Type": "application/octet-stream",
+        },
+      }
     );
 
-    // Map the results to URLs
-    const results = uploadedFiles.map((file, index) => ({
-      fileUrl: file.ServerRelativeUrl,
-      shareableLink: shareableLinks[index].url,
-    }));
-
-    res.json({
-      message: "Files uploaded successfully!",
-      files: results,
-    });
+    return response.data.d; // Return the response data from SharePoint
   } catch (error) {
-    console.error("Error uploading files or generating share links: ", error);
-    res
-      .status(500)
-      .send(`File upload or share link generation failed: ${error.message}`);
+    console.error(
+      "Error uploading to SharePoint:",
+      error.response ? error.response.data : error.message
+    );
+    throw new Error("File upload to SharePoint failed.");
+  }
+}
+
+router.post("/NoteFilesUpload", upload.array("files"), async (req, res) => {
+  const files = req.files;
+  const folderName = "test"; // Get dynamic folder name from the request body
+  console.log("files", files);
+
+  if (!files || !folderName) {
+    return res.status(400).send("Files and folder name are required.");
+  }
+
+  const folderPath = `/sites/ProviderTeam/Shared Documents/Documents/`; // Define your SharePoint folder path dynamically
+
+  try {
+    // Array to store share links for all uploaded files
+    const shareLinks = [];
+
+    // Upload each file to SharePoint and get the share link
+    for (const file of files) {
+      const shareLink = await uploadFileToSharePoint(
+        file.path,
+        file.originalname,
+        folderPath
+      );
+      shareLinks.push({
+        fileName: file.originalname,
+        shareLink: shareLink.Url,
+      });
+
+      // Cleanup uploaded file from server after uploading to SharePoint
+      fs.unlinkSync(file.path);
+    }
+
+    // Send all share links back to the frontend
+    res.json({ shareLinks });
+  } catch (error) {
+    res.status(500).send("Error uploading files to SharePoint");
   }
 });
 
